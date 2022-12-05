@@ -1,26 +1,21 @@
-import React from 'react';
+import { useEffect, useState } from 'react';
 import { toQueryString } from '../utils';
 
-class Weather extends React.Component {
-    constructor(props) {
-      super(props);
-      this.state = {
-        weather: null
-      };
-    }
-    
-    componentDidMount() {
-      navigator.geolocation.getCurrentPosition(
-        this.pollWeather,
-        (err) => console.log(err),
-        { timeout: 10000 }
-      );
-    }
+function Weather(props) {
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      pollWeather,
+      err => console.log(err),
+      { timeout: 10000 }
+    );
+  }, []);
 
-    pollWeather = async (location) => {
-      let url = 'http://api.openweathermap.org/data/2.5/weather?';
+  const [weather, setWeather] = useState(props.weather);
 
-      /* Remember that it's unsafe to expose your API key. (Note that pushing
+  const pollWeather = async location => {
+    let url = 'http://api.openweathermap.org/data/2.5/weather?';
+
+    /* Remember that it's unsafe to expose your API key. (Note that pushing
       files that include your key to Github will expose your key!) In
       production, you would definitely save your key in an environment variable,
       so do that here. Since this project runs in your local environment
@@ -29,49 +24,45 @@ class Weather extends React.Component {
       "process.env.<variable_name>". Make sure to .gitignore your .env file!
       Also remember to restart your server (i.e., re-run "npm start") whenever
       you change your .env file. */
-      const apiKey = '???';
+    const apiKey = process.env.REACT_APP_WEATHER_API;
+    console.log('🚀 ~ file: Weather.js:33 ~ Weather ~ apiKey', apiKey);
 
-      const params = {
-        lat: location.coords.latitude,
-        lon: location.coords.longitude,
-        appid: apiKey
-      };
-      
-      url += toQueryString(params);
+    const params = {
+      lat: location.coords.latitude,
+      lon: location.coords.longitude,
+      appid: apiKey
+    };
 
-      const res = await fetch(url);
-      if (res.ok) {
-        const weather = await res.json();
-        this.setState({ weather });
-      }
-      else {
-        alert ("Check Weather API key!")
-      }
+    url += toQueryString(params);
+
+    const res = await fetch(url);
+    // debugger;
+    if (res.ok) {
+      const weatherResponse = await res.json();
+      setWeather(weatherResponse);
+    } else {
+      alert('Check Weather API key!');
     }
+  };
 
-  render() {
-    const weather = this.state.weather;
-    let content = <div className='loading'>loading weather...</div>;
-    
-    if (weather) {
-      const temp = (weather.main.temp - 273.15) * 1.8 + 32;
-      content = (
-        <div>
-          <p>{weather.name}</p>
-          <p>{temp.toFixed(1)} degrees</p>
-        </div>
-      );
-    }
+  let content = <div className='loading'>loading weather...</div>;
 
-    return (
-      <section className="weather-section">
-        <h1>Weather</h1>
-        <div className='weather'>
-          {content}
-        </div>
-      </section>
+  if (weather) {
+    const temp = (weather.main.temp - 273.15) * 1.8 + 32;
+    content = (
+      <div>
+        <p>{weather.name}</p>
+        <p>{temp.toFixed(1)} degrees</p>
+      </div>
     );
   }
+
+  return (
+    <section className='weather-section'>
+      <h1>Weather</h1>
+      <div className='weather'>{content}</div>
+    </section>
+  );
 }
 
 export default Weather;
