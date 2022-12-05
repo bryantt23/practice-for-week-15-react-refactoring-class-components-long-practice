@@ -16,18 +16,9 @@ function Clock() {
     setIntervalClock(setInterval(tick, 1000));
     return () => {
       console.log('Clearing Clock interval!');
-      clearInterval(intervalClock);
+      clearInterval(intervalClock); // without this there's a memory leak
     };
   }, []);
-
-  // componentDidMount() {
-  //   this.interval = setInterval(this.tick, 1000);
-  // }
-
-  // componentWillUnmount() {
-  //   console.log('Clearing Clock interval!');
-  //   clearInterval(this.interval);
-  // }
 
   const tick = () => {
     setTime(new Date());
